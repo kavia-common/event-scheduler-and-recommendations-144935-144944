@@ -1,7 +1,12 @@
-import React, { useContext } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import React, { useContext, useMemo, useState } from 'react';
 
 const ThemeContext = React.createContext({ themeMode: 'system', toggle: () => {}, setThemeMode: () => {} });
+
+// Smooth-scroll helper
+function scrollToId(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 // Simple wave + spark SVG mark
 const Logo = () => (
@@ -21,12 +26,25 @@ const Logo = () => (
 export default function Header({ onCreate }) {
   /** Top navigation bar with brand and primary actions. */
   const themeCtx = useContext(ThemeContext);
-  const { pathname } = useLocation();
+  const [open, setOpen] = useState(false);
+
+  const items = useMemo(() => ([
+    { id: 'home', label: 'Home' },
+    { id: 'features', label: 'Features' },
+    { id: 'about', label: 'About' },
+    { id: 'calendar', label: 'Calendar' },
+  ]), []);
+
+  const handleNav = (id) => (e) => {
+    e.preventDefault();
+    setOpen(false);
+    scrollToId(id);
+  };
 
   return (
     <header className="header">
       <div className="header-inner">
-        <Link className="brand" to="/">
+        <a className="brand" href="#home" onClick={handleNav('home')}>
           <div className="brand-badge" aria-hidden>
             <Logo />
           </div>
@@ -34,11 +52,21 @@ export default function Header({ onCreate }) {
             <div>HackWave</div>
             <div className="kicker">Ride the AI tide. Plan winning hackathons.</div>
           </div>
-        </Link>
-        <nav className="nav" aria-label="Primary">
-          <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : undefined}>Home</NavLink>
-          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : undefined}>About</NavLink>
-          <NavLink to="/calendar" className={({ isActive }) => isActive ? 'active' : undefined}>Calendar</NavLink>
+        </a>
+
+        <button
+          className="btn nav-toggle"
+          aria-label="Toggle navigation menu"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          ☰
+        </button>
+
+        <nav className={`nav ${open ? 'open' : ''}`} aria-label="Primary">
+          {items.map((it) => (
+            <a key={it.id} href={`#${it.id}`} onClick={handleNav(it.id)}>{it.label}</a>
+          ))}
           <button className="btn" onClick={themeCtx.toggle} aria-label="Toggle Dark Mode">
             🌓
           </button>

@@ -6,7 +6,6 @@ import Calendar from './components/Calendar';
 import Sidebar from './components/Sidebar';
 import EventModal from './components/EventModal';
 import { theme } from './theme';
-import { BrowserRouter, Routes, Route, useNavigate, Link } from 'react-router-dom';
 
 /** BackgroundFX renders animated ocean waves and robotic dotted grid for subtle depth across pages. */
 function BackgroundFX() {
@@ -34,42 +33,31 @@ function BackgroundFX() {
 
 function HomeHero({ onCreate }) {
   return (
-    <section className="card" style={{ overflow: 'hidden' }} aria-label="Hero">
+    <section className="card section" id="home" style={{ overflow: 'hidden' }} aria-label="Hero">
       <div className="card-header">
         <div className="card-title">Welcome to HackWave</div>
         <button className="btn primary" onClick={onCreate}>+ Plan a Hackathon</button>
       </div>
       <div className="card-body" style={{ display: 'grid', gap: 16 }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1.4fr 1fr',
-          gap: 16,
-          alignItems: 'center'
-        }}>
+        <div className="hero-grid">
           <div>
-            <h1 style={{ margin: '8px 0 6px', fontSize: 28 }}>AI-powered Hackathon Planning</h1>
-            <p className="kicker" style={{ fontSize: 14 }}>
+            <h1 className="hero-title">AI-powered Hackathon Planning</h1>
+            <p className="kicker hero-subtitle">
               Forecast schedules, recommend challenges, and streamline team collaboration with Ocean Professional polish.
             </p>
-            <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-              <Link className="btn primary" to="/calendar">Open Calendar</Link>
-              <Link className="btn" to="/about">Learn More</Link>
+            <div className="hero-actions">
+              <a className="btn primary" href="#calendar">Open Calendar</a>
+              <a className="btn" href="#about">Learn More</a>
             </div>
           </div>
-          <div style={{
-            borderRadius: 12,
-            overflow: 'hidden',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-md)'
-          }}>
+          <div className="hero-image">
             <img
               src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=1200&auto=format&fit=crop"
               alt="Developers collaborating at a hackathon"
-              style={{ width: '100%', display: 'block' }}
             />
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div id="features" className="features-grid">
           <FeatureCard
             title="AI Recommendations"
             desc="Get suggested hackathons, timelines, and resources based on your interests."
@@ -111,7 +99,7 @@ function FeatureCard({ title, desc, icon, image }) {
 
 function AboutSection() {
   return (
-    <section className="card">
+    <section className="card section" id="about" aria-label="About HackWave">
       <div className="card-header">
         <div className="card-title">About HackWave</div>
       </div>
@@ -121,7 +109,7 @@ function AboutSection() {
           execute winning projects. With AI-powered recommendations, you can discover upcoming hackathons, optimize
           your sprint schedule, and align team resources with judging criteria.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+        <div className="about-grid">
           <AboutTile
             title="AI Insights"
             desc="Personalized recommendations for hackathons, challenges, and learning paths."
@@ -143,16 +131,10 @@ function AboutSection() {
             icon="🌊"
           />
         </div>
-        <div style={{
-          borderRadius: 12,
-          overflow: 'hidden',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-md)'
-        }}>
+        <div className="about-image">
           <img
             src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop"
             alt="Team collaboration during hackathon"
-            style={{ width: '100%', display: 'block' }}
           />
         </div>
       </div>
@@ -228,12 +210,26 @@ function ThemeProvider({ children }) {
 
 const ThemeContext = React.createContext({ themeMode: 'system', toggle: () => {}, setThemeMode: () => {} });
 
+// Smooth scroll on hash load
+function useHashScroll() {
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+      }
+    }
+  }, []);
+}
+
 // PUBLIC_INTERFACE
 function AppShell() {
-  /** Main app shell rendering header, routing views, sidebar, and modal. */
+  /** Main app shell rendering header, landing sections, sidebar, and modal. */
   const { addEvent, setSelectedDate } = useEvents();
   const [open, setOpen] = useState(false);
   const [prefill, setPrefill] = useState(null);
+  useHashScroll();
 
   const openCreate = useCallback((defaults) => {
     setPrefill(defaults || null);
@@ -255,35 +251,30 @@ function AppShell() {
     <div className="app-shell" style={{ '--transition': theme.transitions.base }}>
       <BackgroundFX />
       <Header onCreate={() => openCreate()} />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <main className="content">
-              <HomeHero onCreate={() => openCreate()} />
-              <Sidebar onCreate={() => openCreate()} />
-            </main>
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <main className="content">
-              <AboutSection />
-              <Sidebar onCreate={() => openCreate()} />
-            </main>
-          }
-        />
-        <Route
-          path="/calendar"
-          element={
-            <main className="content">
-              <Calendar onCreateForDate={openForDate} />
-              <Sidebar onCreate={() => openCreate()} />
-            </main>
-          }
-        />
-      </Routes>
+
+      <main className="content">
+        <HomeHero onCreate={() => openCreate()} />
+        <Sidebar onCreate={() => openCreate()} />
+      </main>
+
+      <main className="content">
+        <AboutSection />
+        <div className="card section-cta">
+          <div className="card-body">
+            <div className="kicker">Ready to plan?</div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <a className="btn primary" href="#calendar">Open Calendar</a>
+              <button className="btn" onClick={() => openCreate()}>Quick Add</button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <main className="content">
+        <Calendar onCreateForDate={openForDate} />
+        <Sidebar onCreate={() => openCreate()} />
+      </main>
+
       <EventModal open={open} onClose={close} onSubmit={submit} defaultValues={prefill || {}} />
       <Footer />
     </div>
@@ -292,13 +283,11 @@ function AppShell() {
 
 // PUBLIC_INTERFACE
 export default function App() {
-  /** Root app with context provider and router. */
+  /** Root single-page app with context provider. */
   return (
     <EventProvider>
       <ThemeProvider>
-        <BrowserRouter>
-          <AppShell />
-        </BrowserRouter>
+        <AppShell />
       </ThemeProvider>
     </EventProvider>
   );

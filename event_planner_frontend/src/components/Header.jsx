@@ -1,24 +1,40 @@
 import React from 'react';
 
+// Simple wave + spark SVG mark
+const Logo = () => (
+  <svg width="24" height="24" viewBox="0 0 48 48" aria-hidden focusable="false">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1">
+        <stop offset="0%" stopColor="rgba(37,99,235,0.95)" />
+        <stop offset="100%" stopColor="rgba(37,99,235,0.75)" />
+      </linearGradient>
+    </defs>
+    <path d="M4 30c8 0 8-12 16-12s8 12 16 12 8-12 16-12" stroke="url(#g)" strokeWidth="4" fill="none" />
+    <circle cx="38" cy="10" r="3" fill="#F59E0B" />
+  </svg>
+);
+
 // PUBLIC_INTERFACE
 export default function Header({ onCreate }) {
   /** Top navigation bar with brand and primary actions. */
   return (
     <header className="header">
       <div className="header-inner">
-        <div className="brand" aria-label="Event Planner">
-          <div className="brand-badge" aria-hidden>EP</div>
-          <div>
-            <div>Event Planner</div>
-            <div className="kicker">Plan. Organize. Attend.</div>
+        <a className="brand" href="#/">
+          <div className="brand-badge" aria-hidden>
+            <Logo />
           </div>
-        </div>
+          <div>
+            <div>HackWave</div>
+            <div className="kicker">Ride the AI tide. Plan winning hackathons.</div>
+          </div>
+        </a>
         <nav className="nav" aria-label="Primary">
-          <a href="#calendar" className="active">Calendar</a>
-          <a href="#upcoming">Upcoming</a>
-          <a href="#recommended">Recommended</a>
-          <button className="primary" onClick={onCreate} aria-label="Create Event">
-            + Create Event
+          <a href="#/">Home</a>
+          <a href="#/about">About</a>
+          <a href="#/calendar" className="active">Calendar</a>
+          <button className="primary" onClick={onCreate} aria-label="Create Hackathon Item">
+            + Add Hackathon
           </button>
         </nav>
       </div>

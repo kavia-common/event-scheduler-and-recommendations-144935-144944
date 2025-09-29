@@ -3,14 +3,14 @@ import { formatDate } from '../utils/dateUtils';
 
 // PUBLIC_INTERFACE
 export default function EventModal({ open, onClose, onSubmit, defaultValues }) {
-  /** Modal to create a new event. Provides validation and submission. */
+  /** Modal to create a new hackathon item. Provides validation and submission. */
   const initial = useMemo(() => ({
     title: '',
     description: '',
     date: formatDate(new Date()),
     time: '09:00',
     location: '',
-    category: 'General',
+    category: 'Hackathon',
     ...defaultValues,
   }), [defaultValues]);
 
@@ -45,17 +45,17 @@ export default function EventModal({ open, onClose, onSubmit, defaultValues }) {
   };
 
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Create Event">
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Create Hackathon Item">
       <div className="modal">
         <div className="modal-header">
-          <div className="card-title">Create Event</div>
+          <div className="card-title">Create Hackathon Item</div>
           <button className="btn" onClick={onClose} aria-label="Close">✕</button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-row">
               <label className="label" htmlFor="title">Title</label>
-              <input id="title" className="input" value={values.title} onChange={update('title')} placeholder="e.g., Team Sync" />
+              <input id="title" className="input" value={values.title} onChange={update('title')} placeholder="e.g., Team Formation, AI Briefing" />
               {errors.title && <div className="helper" style={{ color: 'var(--error)' }}>{errors.title}</div>}
             </div>
             <div className="form-row">
@@ -76,17 +76,17 @@ export default function EventModal({ open, onClose, onSubmit, defaultValues }) {
             </div>
             <div className="form-row">
               <label className="label" htmlFor="location">Location</label>
-              <input id="location" className="input" value={values.location} onChange={update('location')} placeholder="e.g., Zoom" />
+              <input id="location" className="input" value={values.location} onChange={update('location')} placeholder="e.g., Main Hall / Zoom" />
             </div>
             <div className="form-row">
               <label className="label" htmlFor="category">Category</label>
               <select id="category" className="select" value={values.category} onChange={update('category')}>
-                <option>General</option>
-                <option>Work</option>
-                <option>Health</option>
-                <option>Personal</option>
-                <option>Learning</option>
-                <option>Networking</option>
+                <option>Hackathon</option>
+                <option>Workshop</option>
+                <option>Sprint</option>
+                <option>Mentorship</option>
+                <option>Judging</option>
+                <option>AI</option>
               </select>
             </div>
           </div>

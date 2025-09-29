@@ -35,7 +35,7 @@ export default function Calendar({ onCreateForDate }) {
   };
 
   return (
-    <section className="card calendar" id="calendar" aria-label="Calendar">
+    <section className="card calendar" id="calendar" aria-label="Hackathon Calendar">
       <div className="calendar-header">
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button className="btn" onClick={handlePrev} aria-label="Previous month">‹</button>

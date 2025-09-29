@@ -3,6 +3,6 @@ import App from './App';
 
 test('renders header brand', () => {
   render(<App />);
-  const brand = screen.getByText(/Event Planner/i);
+  const brand = screen.getByText(/HackWave/i);
   expect(brand).toBeInTheDocument();
 });

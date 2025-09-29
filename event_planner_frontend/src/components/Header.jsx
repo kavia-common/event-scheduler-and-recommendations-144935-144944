@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+
+const ThemeContext = React.createContext({ themeMode: 'system', toggle: () => {}, setThemeMode: () => {} });
 
 // Simple wave + spark SVG mark
 const Logo = () => (
@@ -17,10 +20,13 @@ const Logo = () => (
 // PUBLIC_INTERFACE
 export default function Header({ onCreate }) {
   /** Top navigation bar with brand and primary actions. */
+  const themeCtx = useContext(ThemeContext);
+  const { pathname } = useLocation();
+
   return (
     <header className="header">
       <div className="header-inner">
-        <a className="brand" href="#/">
+        <Link className="brand" to="/">
           <div className="brand-badge" aria-hidden>
             <Logo />
           </div>
@@ -28,11 +34,14 @@ export default function Header({ onCreate }) {
             <div>HackWave</div>
             <div className="kicker">Ride the AI tide. Plan winning hackathons.</div>
           </div>
-        </a>
+        </Link>
         <nav className="nav" aria-label="Primary">
-          <a href="#/">Home</a>
-          <a href="#/about">About</a>
-          <a href="#/calendar" className="active">Calendar</a>
+          <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : undefined}>Home</NavLink>
+          <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : undefined}>About</NavLink>
+          <NavLink to="/calendar" className={({ isActive }) => isActive ? 'active' : undefined}>Calendar</NavLink>
+          <button className="btn" onClick={themeCtx.toggle} aria-label="Toggle Dark Mode">
+            🌓
+          </button>
           <button className="primary" onClick={onCreate} aria-label="Create Hackathon Item">
             + Add Hackathon
           </button>

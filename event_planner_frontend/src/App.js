@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import './styles.css';
 import { EventProvider, useEvents } from './context/EventContext';
 import Header from './components/Header';
@@ -6,23 +6,30 @@ import Calendar from './components/Calendar';
 import Sidebar from './components/Sidebar';
 import EventModal from './components/EventModal';
 import { theme } from './theme';
+import { BrowserRouter, Routes, Route, useNavigate, Link } from 'react-router-dom';
 
-// Simple hash-router helper
-function useHashRoute() {
-  const [hash, setHash] = useState(() => window.location.hash || '#/');
-  useEffect(() => {
-    const onHash = () => setHash(window.location.hash || '#/');
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
-  }, []);
-  const route = useMemo(() => {
-    const h = hash.replace(/^#/, '');
-    // Normalize: '/', '/about', '/calendar'
-    if (h.startsWith('/about')) return '/about';
-    if (h.startsWith('/calendar')) return '/calendar';
-    return '/';
-  }, [hash]);
-  return route;
+/** BackgroundFX renders animated ocean waves and robotic dotted grid for subtle depth across pages. */
+function BackgroundFX() {
+  return (
+    <div className="bgfx" aria-hidden>
+      <div className="bgfx-gradient" />
+      <svg className="bgfx-waves" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path d="M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,224C672,224,768,192,864,181.3C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L0,320Z" fill="url(#waveGradient)" fillOpacity="0.25"></path>
+        <defs>
+          <linearGradient id="waveGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--primary)" />
+            <stop offset="100%" stopColor="var(--primary-soft)" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="bgfx-grid" />
+      <div className="bgfx-robot-orbs">
+        <span className="orb orb-1" />
+        <span className="orb orb-2" />
+        <span className="orb orb-3" />
+      </div>
+    </div>
+  );
 }
 
 function HomeHero({ onCreate }) {
@@ -45,8 +52,8 @@ function HomeHero({ onCreate }) {
               Forecast schedules, recommend challenges, and streamline team collaboration with Ocean Professional polish.
             </p>
             <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-              <a className="btn primary" href="#/calendar">Open Calendar</a>
-              <a className="btn" href="#/about">Learn More</a>
+              <Link className="btn primary" to="/calendar">Open Calendar</Link>
+              <Link className="btn" to="/about">Learn More</Link>
             </div>
           </div>
           <div style={{
@@ -181,13 +188,52 @@ function Footer() {
   );
 }
 
+/** ThemeProvider: manages light/dark theme with system preference and persistence. */
+function ThemeProvider({ children }) {
+  const [themeMode, setThemeMode] = useState('system');
+
+  // apply on mount from localStorage or system
+  useEffect(() => {
+    const stored = localStorage.getItem('hackwave-theme');
+    if (stored) setThemeMode(stored);
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const effectiveDark = themeMode === 'dark' || (themeMode === 'system' && systemPrefersDark);
+    if (effectiveDark) {
+      root.classList.add('theme-dark');
+    } else {
+      root.classList.remove('theme-dark');
+    }
+  }, [themeMode]);
+
+  const toggle = useCallback(() => {
+    setThemeMode((m) => {
+      const next = m === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('hackwave-theme', next);
+      return next;
+    });
+  }, []);
+
+  const value = useMemo(() => ({ themeMode, toggle, setThemeMode }), [themeMode, toggle]);
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+const ThemeContext = React.createContext({ themeMode: 'system', toggle: () => {}, setThemeMode: () => {} });
+
 // PUBLIC_INTERFACE
 function AppShell() {
   /** Main app shell rendering header, routing views, sidebar, and modal. */
   const { addEvent, setSelectedDate } = useEvents();
   const [open, setOpen] = useState(false);
   const [prefill, setPrefill] = useState(null);
-  const route = useHashRoute();
 
   const openCreate = useCallback((defaults) => {
     setPrefill(defaults || null);
@@ -205,36 +251,39 @@ function AppShell() {
     await addEvent(values);
   };
 
-  const renderMain = () => {
-    if (route === '/about') {
-      return (
-        <main className="content">
-          <AboutSection />
-          <Sidebar onCreate={() => openCreate()} />
-        </main>
-      );
-    }
-    if (route === '/calendar') {
-      return (
-        <main className="content">
-          <Calendar onCreateForDate={openForDate} />
-          <Sidebar onCreate={() => openCreate()} />
-        </main>
-      );
-    }
-    // default Home
-    return (
-      <main className="content">
-        <HomeHero onCreate={() => openCreate()} />
-        <Sidebar onCreate={() => openCreate()} />
-      </main>
-    );
-  };
-
   return (
     <div className="app-shell" style={{ '--transition': theme.transitions.base }}>
+      <BackgroundFX />
       <Header onCreate={() => openCreate()} />
-      {renderMain()}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <main className="content">
+              <HomeHero onCreate={() => openCreate()} />
+              <Sidebar onCreate={() => openCreate()} />
+            </main>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <main className="content">
+              <AboutSection />
+              <Sidebar onCreate={() => openCreate()} />
+            </main>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <main className="content">
+              <Calendar onCreateForDate={openForDate} />
+              <Sidebar onCreate={() => openCreate()} />
+            </main>
+          }
+        />
+      </Routes>
       <EventModal open={open} onClose={close} onSubmit={submit} defaultValues={prefill || {}} />
       <Footer />
     </div>
@@ -243,10 +292,14 @@ function AppShell() {
 
 // PUBLIC_INTERFACE
 export default function App() {
-  /** Root app with context provider. */
+  /** Root app with context provider and router. */
   return (
     <EventProvider>
-      <AppShell />
+      <ThemeProvider>
+        <BrowserRouter>
+          <AppShell />
+        </BrowserRouter>
+      </ThemeProvider>
     </EventProvider>
   );
 }

@@ -74,11 +74,11 @@ function LeftSidebar({ onCreate }) {
     <>
       <button
         className="leftbar-toggle btn"
-        aria-label="Toggle sidebar"
+        aria-label="Toggle navigation menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        ☰
+        ☰ Menu
       </button>
       <aside className={`leftbar ${open ? 'open' : ''}`} aria-label="App Navigation">
         <div className="leftbar-header">

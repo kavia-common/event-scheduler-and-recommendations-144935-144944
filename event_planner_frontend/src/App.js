@@ -117,7 +117,7 @@ function HomeHero({ onCreate }) {
         <div className="card-title">Welcome to HackWave</div>
         <button className="btn primary" onClick={onCreate}>+ Plan a Hackathon</button>
       </div>
-      <div className="card-body" style={{ display: 'grid', gap: 16 }}>
+      <div className="card-body" style={{ display: 'grid', gap: 18 }}>
         <div className="hero-grid">
           <div>
             <h1 className="hero-title">AI-powered Hackathon Planning</h1>
@@ -182,7 +182,7 @@ function AboutSection() {
       <div className="card-header">
         <div className="card-title">About HackWave</div>
       </div>
-      <div className="card-body" style={{ display: 'grid', gap: 14 }}>
+      <div className="card-body" style={{ display: 'grid', gap: 16 }}>
         <p>
           HackWave is a hackathon-centric event planner that helps organizers and participants plan, schedule, and
           execute winning projects. With AI-powered recommendations, you can discover upcoming hackathons, optimize
@@ -343,6 +343,8 @@ function AppShell() {
               </div>
             </div>
           </div>
+          {/* Ensure extra spacing before calendar on small screens so background FX never crowds text */}
+          <div style={{ height: 0, marginTop: 2 }} aria-hidden />
           <Calendar onCreateForDate={openForDate} />
         </div>
       </main>

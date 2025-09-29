@@ -1,0 +1,4 @@
+{
+    "command": "npm install",
+    "working_directory": "/home/kavia/workspace/code-generation/event-scheduler-and-recommendations-144935-144944/event_planner_frontend"
+}

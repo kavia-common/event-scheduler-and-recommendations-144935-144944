@@ -1,9 +1,8 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useContext } from 'react';
 import './styles.css';
 import { EventProvider, useEvents } from './context/EventContext';
-import Header from './components/Header';
 import Calendar from './components/Calendar';
-import Sidebar from './components/Sidebar';
+import SidebarWidgets from './components/Sidebar';
 import EventModal from './components/EventModal';
 import { theme } from './theme';
 
@@ -28,6 +27,86 @@ function BackgroundFX() {
         <span className="orb orb-3" />
       </div>
     </div>
+  );
+}
+
+// Smooth-scroll helper for links in the left sidebar
+function scrollToId(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/** Simple wave + spark SVG mark for brand */
+const Logo = () => (
+  <svg width="24" height="24" viewBox="0 0 48 48" aria-hidden focusable="false">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1">
+        <stop offset="0%" stopColor="rgba(37,99,235,0.95)" />
+        <stop offset="100%" stopColor="rgba(37,99,235,0.75)" />
+      </linearGradient>
+    </defs>
+    <path d="M4 30c8 0 8-12 16-12s8 12 16 12 8-12 16-12" stroke="url(#g)" strokeWidth="4" fill="none" />
+    <circle cx="38" cy="10" r="3" fill="#F59E0B" />
+  </svg>
+);
+
+const ThemeContext = React.createContext({ themeMode: 'system', toggle: () => {}, setThemeMode: () => {} });
+
+/** LeftSidebar: persistent navigation + merged widgets, collapsible on mobile */
+function LeftSidebar({ onCreate }) {
+  const themeCtx = useContext(ThemeContext);
+  const [open, setOpen] = useState(false);
+
+  const navItems = useMemo(() => ([
+    { id: 'home', label: 'Home' },
+    { id: 'features', label: 'Features' },
+    { id: 'about', label: 'About' },
+    { id: 'calendar', label: 'Calendar' },
+  ]), []);
+
+  const handleNav = (id) => (e) => {
+    e.preventDefault();
+    setOpen(false);
+    scrollToId(id);
+  };
+
+  return (
+    <>
+      <button
+        className="leftbar-toggle btn"
+        aria-label="Toggle sidebar"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        ☰
+      </button>
+      <aside className={`leftbar ${open ? 'open' : ''}`} aria-label="App Navigation">
+        <div className="leftbar-header">
+          <a className="brand" href="#home" onClick={handleNav('home')}>
+            <div className="brand-badge" aria-hidden>
+              <Logo />
+            </div>
+            <div>
+              <div>HackWave</div>
+              <div className="kicker">Ocean Professional</div>
+            </div>
+          </a>
+          <button className="btn" onClick={themeCtx.toggle} aria-label="Toggle Dark Mode">🌓</button>
+        </div>
+
+        <nav className="leftbar-nav">
+          {navItems.map((it) => (
+            <a key={it.id} href={`#${it.id}`} onClick={handleNav(it.id)}>{it.label}</a>
+          ))}
+          <button className="btn primary" onClick={onCreate} aria-label="Create Hackathon Item">+ Add Hackathon</button>
+        </nav>
+
+        <div className="leftbar-widgets">
+          {/* Merge right sidebar widgets here; reuse SidebarWidgets for lists */}
+          <SidebarWidgets onCreate={onCreate} />
+        </div>
+      </aside>
+    </>
   );
 }
 
@@ -174,7 +253,6 @@ function Footer() {
 function ThemeProvider({ children }) {
   const [themeMode, setThemeMode] = useState('system');
 
-  // apply on mount from localStorage or system
   useEffect(() => {
     const stored = localStorage.getItem('hackwave-theme');
     if (stored) setThemeMode(stored);
@@ -208,8 +286,6 @@ function ThemeProvider({ children }) {
   );
 }
 
-const ThemeContext = React.createContext({ themeMode: 'system', toggle: () => {}, setThemeMode: () => {} });
-
 // Smooth scroll on hash load
 function useHashScroll() {
   useEffect(() => {
@@ -225,7 +301,7 @@ function useHashScroll() {
 
 // PUBLIC_INTERFACE
 function AppShell() {
-  /** Main app shell rendering header, landing sections, sidebar, and modal. */
+  /** Main app shell rendering left sidebar, landing sections, and modal. */
   const { addEvent, setSelectedDate } = useEvents();
   const [open, setOpen] = useState(false);
   const [prefill, setPrefill] = useState(null);
@@ -250,29 +326,25 @@ function AppShell() {
   return (
     <div className="app-shell" style={{ '--transition': theme.transitions.base }}>
       <BackgroundFX />
-      <Header onCreate={() => openCreate()} />
+      {/* Persistent left sidebar with nav + merged widgets */}
+      <LeftSidebar onCreate={() => openCreate()} />
 
-      <main className="content">
-        <HomeHero onCreate={() => openCreate()} />
-        <Sidebar onCreate={() => openCreate()} />
-      </main>
-
-      <main className="content">
-        <AboutSection />
-        <div className="card section-cta">
-          <div className="card-body">
-            <div className="kicker">Ready to plan?</div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <a className="btn primary" href="#calendar">Open Calendar</a>
-              <button className="btn" onClick={() => openCreate()}>Quick Add</button>
+      {/* Main content area (full-width content; right sidebar removed) */}
+      <main className="content content-with-leftbar">
+        <div className="main-stack">
+          <HomeHero onCreate={() => openCreate()} />
+          <AboutSection />
+          <div className="card section-cta">
+            <div className="card-body">
+              <div className="kicker">Ready to plan?</div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <a className="btn primary" href="#calendar">Open Calendar</a>
+                <button className="btn" onClick={() => openCreate()}>Quick Add</button>
+              </div>
             </div>
           </div>
+          <Calendar onCreateForDate={openForDate} />
         </div>
-      </main>
-
-      <main className="content">
-        <Calendar onCreateForDate={openForDate} />
-        <Sidebar onCreate={() => openCreate()} />
       </main>
 
       <EventModal open={open} onClose={close} onSubmit={submit} defaultValues={prefill || {}} />
